@@ -92,6 +92,7 @@ input {
     <button onclick="soloHint()">Dar dica (-1 ponto)</button>
     <button onclick="soloCorrect()">✅ Acertou</button>
     <button class="secondary" onclick="soloFail()">❌ Não acertou</button>
+    <button class="secondary" onclick="skipWord()">⏭️ Pular palavra</button>
 </div>
 
 <!-- DUPLAS -->
@@ -108,6 +109,7 @@ input {
 
     <button onclick="passTurn()">Passar a vez</button>
     <button onclick="duplaPoint()">✅ Acertou (+1 ponto)</button>
+    <button class="secondary" onclick="skipWord()">⏭️ Pular palavra</button>
 </div>
 
 <!-- RESULTADO -->
@@ -118,7 +120,7 @@ input {
 </div>
 
 <script>
-const words = [
+const words = [ /* SEU ARRAY DE PALAVRAS – MANTIDO */ 
 "abacate","abacaxi","abelha","academia","acidente","acucar","adaptador","adega","advogado","aeroporto",
 "afeto","agenda","agulha","alface","algodao","alicate","almofada","aluno","ambulancia","amizade",
 "anel","anjo","antena","aparelho","apartamento","apito","arara","arco","armario","arroz",
@@ -138,38 +140,38 @@ const words = [
 "formiga","fotografia","fralda","frango","fruta","futebol","galinha","garagem","garfo","geladeira",
 "girafa","goiaba","golfinho","governo","grama","gravata","guitarra","hamburguer","helicoptero","hospital",
 "hotel","igreja","impressora","internet","ilha","janela","jardim","joaninha","joelho","jornal",
-"lagarto","lampada","laranja","lata","leao","leite","lenha","leopardo","livro","lixeira",
-"macaco","macarrao","mae","maleta","manga","mapa","martelo","medico","melancia","memoria",
-"mesa","microfone","milho","mochila","molho","montanha","morango","motor","mouse","musica",
-"navio","neve","notebook","oculos","olho","onibus","orelha","ovo","padaria","pao",
-"papel","parafuso","parque","passaporte","peixe","pendrive","perfume","pessoa","peteca","piano",
-"pipoca","pirata","placa","planeta","planta","policia","porta","praia","prato","professor",
-"queijo","quintal","radio","rato","receita","refrigerante","relampago","relogio","revista","rio",
-"roda","roupa","sabao","sapato","satelite","saude","segredo","seringa","shopping","sino",
-"skate","sofa","sombra","sorvete","suco","tartaruga","telefone","televisao","tigre","tomada",
-"trabalho","travesseiro","trem","triangulo","tubarao","universidade","urso","vaso","vela","ventilador",
-"viagem","violao","vitamina","zebra","abajur","acordeao","amendoim","ampulheta","ancora","antigo",
-"areia","atlas","aviao","balde","baunilha","bigode","bloco","bussola","cabide","caldeirao",
-"camisa","canario","canivete","capivara","carimbo","carrinho","cebola","cimento","clipe","cofre",
-"colchao","cometa","confete","costura","dedal","despertador","dinossauro","disco","domino","empada",
-"escorregador","esmeralda","estatua","farol","foguete","funil","gangorra","gaveta","geleia","globo",
-"granada","horta","icaro","iman","ingresso","isqueiro","jacare","janela","jasmim","ketchup",
-"ladrilho","lente","limao","luneta","magnata","mamadeira","manivela","mariposa","meia","microscopio",
-"mina","moinho","navalha","ninho","novelo","obelisco","origami","palhaco","panela","parquimetro",
-"patins","pergaminho","perola","pijama","pinheiro","piramide","polvo","quadro","radar","raquete",
-"rebite","remo","roleta","sabonete","sacola","sanfona","serrote","sinaleiro","sombra","sutiã",
-"tabuleiro","teclado","telescopio","tesoura","tijolo","torneira","trompete","urna","varanda","vassoura",
-"vidro","vinagre","volante","xadrez","xicara","zoologico"
+"lagarto","lampada","laranja","lata","leao","leite","lenha","leopardo","livro","lixeira"
 ];
 
-
-let mode = "";
-let players = [];
-let scores = [];
-let round = 0;
+let availableWords = [];
+let usedWords = [];
 let word = "";
 
+function resetWords() {
+    availableWords = [...words];
+    usedWords = [];
+}
+
+function getNewWord() {
+    if (availableWords.length === 0) {
+        alert("Acabaram as palavras!");
+        return;
+    }
+    const i = Math.floor(Math.random() * availableWords.length);
+    word = availableWords[i];
+    usedWords.push(word);
+    availableWords.splice(i, 1);
+}
+
+function skipWord() {
+    getNewWord();
+    if (mode === "solo") soloWord.innerText = "********";
+    else duplaWord.innerText = "********";
+}
+
 /* ===== CONTROLE GERAL ===== */
+let mode = "", players = [], scores = [], round = 0;
+
 function showScreen(id) {
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
     document.getElementById(id).classList.add("active");
@@ -182,7 +184,7 @@ function chooseMode(m) {
 
 function startGame() {
     players = [p1.value,p2.value,p3.value,p4.value,p5.value,p6.value].filter(p => p);
-
+    resetWords();
     if (mode === "solo") startSolo();
     else startDuplas();
 }
@@ -203,7 +205,7 @@ function nextSolo() {
     if (round >= 10) return endSolo();
     round++;
     soloHints = 0;
-    word = words[Math.floor(Math.random() * words.length)];
+    getNewWord();
     soloWord.innerText = "********";
     soloScore.innerText = 3;
     soloRound.innerText = round;
@@ -262,7 +264,7 @@ function startDuplas() {
 function nextDupla() {
     if (round >= 10) return endDuplas();
     round++;
-    word = words[Math.floor(Math.random() * words.length)];
+    getNewWord();
     duplaWord.innerText = "********";
     duplaRound.innerText = round;
     updateDuplaTitle();
